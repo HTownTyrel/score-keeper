@@ -158,6 +158,39 @@ button:active {
   padding: 2px 8px;
 }
 
+/* Game list on the Manage Games screen */
+#game-type-list {
+  margin-bottom: 10px;
+}
+
+.game-type-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e0d6bf;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+
+.game-type-row .game-type-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-type-row .game-type-rules {
+  font-size: 0.8rem;
+  color: #6b5f47;
+}
+
+.game-type-row button {
+  background: none;
+  color: var(--card-red);
+  font-weight: bold;
+  padding: 2px 8px;
+}
+
 /* Each player's tally button on the play screen looks like a big playing card */
 .player-card {
   display: flex;

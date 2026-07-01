@@ -14,6 +14,19 @@ const GAME_TYPES = [
   { id: "99", name: "99", mode: "tally", winCondition: "highest" },
 ];
 
+// Every game the app currently knows about: the built-in list above, plus
+// whatever's been added from the Manage Games screen and saved to
+// localStorage. Anything that reads "what games exist" should go through
+// this function instead of reading GAME_TYPES directly, so custom games
+// show up everywhere the built-in ones do.
+function getAllGameTypes() {
+  return [...GAME_TYPES, ...loadCustomGameTypes()];
+}
+
+function findGameType(gameTypeId) {
+  return getAllGameTypes().find((g) => g.id === gameTypeId);
+}
+
 // Suit icons are purely decorative - they cycle through players so the
 // tally buttons look like alternating playing cards.
 const SUITS = [
@@ -32,13 +45,19 @@ const STORAGE_KEY = "score-keeper-current-game";
 // out every time the in-progress game is cleared.
 const HISTORY_KEY = "score-keeper-history";
 
+// Games you've added yourself from the Manage Games screen, kept separate
+// from the built-in GAME_TYPES list above so editing script.js is never
+// required just to add a game.
+const CUSTOM_GAMES_KEY = "score-keeper-custom-games";
+
 // ---------------------------------------------------------------------------
 // ELEMENT REFERENCES
 // ---------------------------------------------------------------------------
 const setupScreen = document.getElementById("setup-screen");
 const playScreen = document.getElementById("play-screen");
 const historyScreen = document.getElementById("history-screen");
-const allScreens = [setupScreen, playScreen, historyScreen];
+const manageGamesScreen = document.getElementById("manage-games-screen");
+const allScreens = [setupScreen, playScreen, historyScreen, manageGamesScreen];
 
 const gameTypeSelect = document.getElementById("game-type-select");
 const playerNameInput = document.getElementById("player-name-input");
@@ -53,6 +72,18 @@ const endGameButton = document.getElementById("end-game-button");
 const historyListEl = document.getElementById("history-list");
 const backToSetupButton = document.getElementById("back-to-setup-button");
 const clearHistoryButton = document.getElementById("clear-history-button");
+
+const manageGamesButton = document.getElementById("manage-games-button");
+const gameTypeListEl = document.getElementById("game-type-list");
+const newGameNameInput = document.getElementById("new-game-name-input");
+const newGameModeSelect = document.getElementById("new-game-mode-select");
+const newGameWinConditionSelect = document.getElementById(
+  "new-game-win-condition-select"
+);
+const addGameTypeButton = document.getElementById("add-game-type-button");
+const backFromManageGamesButton = document.getElementById(
+  "back-from-manage-games-button"
+);
 
 const modalOverlay = document.getElementById("modal-overlay");
 const modalMessage = document.getElementById("modal-message");
@@ -164,7 +195,7 @@ startGameButton.addEventListener("click", () => {
     return;
   }
 
-  const gameType = GAME_TYPES.find((g) => g.id === gameTypeSelect.value);
+  const gameType = findGameType(gameTypeSelect.value);
 
   // Build the fresh game object. Object.fromEntries + map turns the
   // players array into a { name: 0, name: 0, ... } starting-scores object.
@@ -185,7 +216,7 @@ startGameButton.addEventListener("click", () => {
 // PLAY SCREEN (tally mode and numeric mode)
 // ---------------------------------------------------------------------------
 function showPlayScreen() {
-  const gameType = GAME_TYPES.find((g) => g.id === currentGame.gameTypeId);
+  const gameType = findGameType(currentGame.gameTypeId);
   playScreenTitle.textContent = gameType.name;
   undoButton.textContent =
     gameType.mode === "numeric" ? "Undo Last Entry" : "Undo Last Point";
@@ -199,7 +230,7 @@ function showPlayScreen() {
 // game starts) - scoring a point only needs to update the score number,
 // not rebuild these cards, which is why that lives in updateScoreDisplay().
 function renderPlayerScores() {
-  const gameType = GAME_TYPES.find((g) => g.id === currentGame.gameTypeId);
+  const gameType = findGameType(currentGame.gameTypeId);
   playerScoresEl.innerHTML = "";
 
   currentGame.players.forEach((name, index) => {
@@ -314,6 +345,44 @@ clearHistoryButton.addEventListener("click", () => {
   });
 });
 
+manageGamesButton.addEventListener("click", () => {
+  renderGameTypeList();
+  showScreen(manageGamesScreen);
+});
+
+backFromManageGamesButton.addEventListener("click", () => {
+  renderGameTypeSelect();
+  showScreen(setupScreen);
+});
+
+addGameTypeButton.addEventListener("click", () => {
+  const name = newGameNameInput.value.trim();
+  if (!name) {
+    showNotice("Enter a name for the game first.");
+    return;
+  }
+
+  const alreadyExists = getAllGameTypes().some(
+    (g) => g.name.toLowerCase() === name.toLowerCase()
+  );
+  if (alreadyExists) {
+    showNotice("A game with that name already exists.");
+    return;
+  }
+
+  const customGames = loadCustomGameTypes();
+  customGames.push({
+    id: makeUniqueGameId(name),
+    name,
+    mode: newGameModeSelect.value,
+    winCondition: newGameWinConditionSelect.value,
+  });
+  saveCustomGameTypes(customGames);
+
+  newGameNameInput.value = "";
+  renderGameTypeList();
+});
+
 // ---------------------------------------------------------------------------
 // PERSISTENCE (localStorage)
 // ---------------------------------------------------------------------------
@@ -350,6 +419,36 @@ function addToHistory(game) {
   saveHistory(history);
 }
 
+function loadCustomGameTypes() {
+  const saved = localStorage.getItem(CUSTOM_GAMES_KEY);
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveCustomGameTypes(customGames) {
+  localStorage.setItem(CUSTOM_GAMES_KEY, JSON.stringify(customGames));
+}
+
+// Turns a game name into a short, code-friendly id (e.g. "Gin Rummy" ->
+// "gin-rummy"), then adds a number on the end if that id is already taken -
+// ids just need to be unique, they're never shown on screen.
+function makeUniqueGameId(name) {
+  const base =
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "game";
+
+  const existingIds = getAllGameTypes().map((g) => g.id);
+  let id = base;
+  let suffix = 2;
+  while (existingIds.includes(id)) {
+    id = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  return id;
+}
+
 // ---------------------------------------------------------------------------
 // HISTORY SCREEN
 // ---------------------------------------------------------------------------
@@ -363,7 +462,13 @@ function renderHistory() {
   }
 
   history.forEach((game) => {
-    const gameType = GAME_TYPES.find((g) => g.id === game.gameTypeId);
+    // Fall back to a plain "highest wins" guess if the custom game type this
+    // was played under has since been deleted from Manage Games, so old
+    // history entries still display instead of breaking.
+    const gameType = findGameType(game.gameTypeId) || {
+      name: game.gameTypeId,
+      winCondition: "highest",
+    };
 
     // Sort players by score so the winner is always shown first.
     // For "highest" games (Golf) that means descending order.
@@ -401,8 +506,80 @@ function renderHistory() {
 }
 
 // ---------------------------------------------------------------------------
+// MANAGE GAMES SCREEN
+// ---------------------------------------------------------------------------
+// Fills in the setup screen's Game dropdown from scratch each time it's
+// called, using whatever built-in + custom games currently exist. Called on
+// startup, and again after leaving Manage Games, in case games changed.
+function renderGameTypeSelect() {
+  const previouslySelectedId = gameTypeSelect.value;
+
+  gameTypeSelect.innerHTML = "";
+  getAllGameTypes().forEach((gameType) => {
+    const option = document.createElement("option");
+    option.value = gameType.id;
+    option.textContent = `${gameType.name} (${
+      gameType.mode === "numeric" ? "enter points per round" : "tally per hand"
+    })`;
+    gameTypeSelect.appendChild(option);
+  });
+
+  // Keep whatever was selected before, if it still exists (e.g. after
+  // adding a new custom game, don't silently reset back to Golf).
+  const stillExists = getAllGameTypes().some(
+    (g) => g.id === previouslySelectedId
+  );
+  if (stillExists) gameTypeSelect.value = previouslySelectedId;
+}
+
+function renderGameTypeList() {
+  const builtInIds = GAME_TYPES.map((g) => g.id);
+  gameTypeListEl.innerHTML = "";
+
+  getAllGameTypes().forEach((gameType) => {
+    const row = document.createElement("div");
+    row.className = "game-type-row";
+
+    const modeLabel =
+      gameType.mode === "numeric" ? "enter points per round" : "tally per hand";
+    const winLabel =
+      gameType.winCondition === "lowest" ? "fewest points wins" : "most points wins";
+
+    row.innerHTML = `
+      <div class="game-type-details">
+        <strong>${gameType.name}</strong>
+        <span class="game-type-rules">${modeLabel} - ${winLabel}</span>
+      </div>
+    `;
+
+    // Built-in games (Golf, 99) can't be deleted - only ones you've added
+    // yourself can, so there's always at least something to play.
+    const isCustom = !builtInIds.includes(gameType.id);
+    if (isCustom) {
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.textContent = "✕";
+      removeButton.addEventListener("click", () => {
+        const remaining = loadCustomGameTypes().filter(
+          (g) => g.id !== gameType.id
+        );
+        saveCustomGameTypes(remaining);
+        renderGameTypeList();
+      });
+      row.appendChild(removeButton);
+    }
+
+    gameTypeListEl.appendChild(row);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // STARTUP
 // ---------------------------------------------------------------------------
+// The Game dropdown starts empty in index.html, so it has to be filled in
+// here before anything else can happen.
+renderGameTypeSelect();
+
 // If a game was already in progress (saved before a refresh or closed tab),
 // resume it straight to the play screen instead of showing setup again.
 const savedGame = loadGame();

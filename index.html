@@ -20,14 +20,12 @@
 
         <label for="game-type-select">Game</label>
         <!--
-          Each <option>'s value must match an `id` in the GAME_TYPES list in
-          script.js - that's how the app knows which play-screen layout and
-          win condition to use for the selected game.
+          No <option>s written here - script.js fills this in from the
+          GAME_TYPES list (built-in games) plus any custom games you've
+          added, so this dropdown always reflects whatever's available
+          without needing to hand-edit this file.
         -->
-        <select id="game-type-select">
-          <option value="golf">Golf (tally per hand)</option>
-          <option value="99">99 (tally per hand)</option>
-        </select>
+        <select id="game-type-select"></select>
 
         <label for="player-name-input">Players</label>
         <div class="add-player-row">
@@ -47,6 +45,9 @@
         </button>
         <button id="view-history-button" type="button" class="link-button">
           View History
+        </button>
+        <button id="manage-games-button" type="button" class="link-button">
+          Manage Games
         </button>
       </section>
 
@@ -77,6 +78,42 @@
         </button>
         <button id="clear-history-button" type="button" class="link-button">
           Clear History
+        </button>
+      </section>
+
+      <!-- MANAGE GAMES SCREEN: see built-in games and add/remove custom ones -->
+      <section id="manage-games-screen" class="screen hidden">
+        <h2>Manage Games</h2>
+
+        <div id="game-type-list"></div>
+
+        <label for="new-game-name-input">Add a new game</label>
+        <div class="add-player-row">
+          <input
+            type="text"
+            id="new-game-name-input"
+            placeholder="Game name"
+            autocomplete="off"
+          />
+        </div>
+
+        <label for="new-game-mode-select">How is it scored?</label>
+        <select id="new-game-mode-select">
+          <option value="tally">Tally - tap a button per hand won</option>
+          <option value="numeric">Numeric - type in points each round</option>
+        </select>
+
+        <label for="new-game-win-condition-select">Who wins?</label>
+        <select id="new-game-win-condition-select">
+          <option value="highest">Most points wins</option>
+          <option value="lowest">Fewest points wins</option>
+        </select>
+
+        <button id="add-game-type-button" type="button" class="primary-button">
+          Add Game
+        </button>
+        <button id="back-from-manage-games-button" type="button" class="link-button">
+          Back
         </button>
       </section>
     </main>
