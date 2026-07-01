@@ -7,11 +7,11 @@
 // `mode` picks which play-screen layout to use ("tally" = one-tap buttons,
 // "numeric" = type in a point amount each round).
 // `winCondition` says how to pick a winner when displaying history:
-// "highest" for games like Golf/Rummy where most points wins. A game where
+// "highest" for games like Golf where most points wins. A game where
 // lowest score wins (e.g. actual golf strokes) could use "lowest" instead.
 const GAME_TYPES = [
   { id: "golf", name: "Golf", mode: "tally", winCondition: "highest" },
-  { id: "rummy", name: "Rummy", mode: "numeric", winCondition: "highest" },
+  { id: "99", name: "99", mode: "tally", winCondition: "highest" },
 ];
 
 // Suit icons are purely decorative - they cycle through players so the
