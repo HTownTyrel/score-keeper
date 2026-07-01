@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Score Keeper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="table-felt">
+    <header>
+      <h1>&#127183; Score Keeper</h1>
+      <p class="tagline">Running scores for game night</p>
+    </header>
+
+    <main>
+      <!-- SETUP SCREEN: pick a game type and add players -->
+      <section id="setup-screen" class="screen">
+        <h2>New Game</h2>
+
+        <label for="game-type-select">Game</label>
+        <!--
+          Each <option>'s value must match an `id` in the GAME_TYPES list in
+          script.js - that's how the app knows which play-screen layout and
+          win condition to use for the selected game.
+        -->
+        <select id="game-type-select">
+          <option value="golf">Golf (tally per hand)</option>
+          <option value="rummy">Rummy (enter points per round)</option>
+        </select>
+
+        <label for="player-name-input">Players</label>
+        <div class="add-player-row">
+          <input
+            type="text"
+            id="player-name-input"
+            placeholder="Enter a player's name"
+            autocomplete="off"
+          />
+          <button id="add-player-button" type="button">Add</button>
+        </div>
+
+        <ul id="player-list"></ul>
+
+        <button id="start-game-button" type="button" class="primary-button">
+          Start Game
+        </button>
+        <button id="view-history-button" type="button" class="link-button">
+          View History
+        </button>
+      </section>
+
+      <!-- PLAY SCREEN: tally buttons + running score, shown once a game starts -->
+      <section id="play-screen" class="screen hidden">
+        <h2 id="play-screen-title">Golf</h2>
+
+        <div id="player-scores"></div>
+
+        <div class="play-screen-actions">
+          <button id="undo-button" type="button" class="secondary-button">
+            Undo Last Point
+          </button>
+          <button id="end-game-button" type="button" class="secondary-button">
+            End Game
+          </button>
+        </div>
+      </section>
+
+      <!-- HISTORY SCREEN: past finished games, most recent first -->
+      <section id="history-screen" class="screen hidden">
+        <h2>Game History</h2>
+
+        <div id="history-list"></div>
+
+        <button id="back-to-setup-button" type="button" class="primary-button">
+          Back
+        </button>
+        <button id="clear-history-button" type="button" class="link-button">
+          Clear History
+        </button>
+      </section>
+    </main>
+
+    <!--
+      MODAL: a reusable "popup box" used instead of the browser's built-in
+      alert()/confirm() dialogs, so messages match the card-night theme.
+      script.js fills in the message and shows/hides the Cancel button
+      depending on whether it's a plain notice or a yes/no confirmation.
+    -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal-box">
+        <p id="modal-message"></p>
+        <div class="modal-actions">
+          <button id="modal-cancel-button" type="button" class="secondary-button">
+            Cancel
+          </button>
+          <button id="modal-confirm-button" type="button" class="primary-button">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

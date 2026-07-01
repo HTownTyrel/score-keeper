@@ -1,0 +1,330 @@
+/*
+  Color scheme: "card game night" — a green felt table, gold trim (like the
+  edge of a poker table), and cream cards, with red/black accents borrowed
+  from playing card suits.
+
+  Defining colors as CSS custom properties (variables) up top means every
+  other rule can reference e.g. var(--gold) instead of repeating the hex
+  code everywhere. Change the color once here and it updates everywhere.
+*/
+:root {
+  --felt-dark: #0b3d24;
+  --felt-light: #1c6b3f;
+  --gold: #d4af37;
+  --cream: #f5efe2;
+  --ink: #26211a;
+  --card-red: #a4243b;
+  --card-black: #1a1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: var(--ink);
+  /* Radial gradient gives the felt a subtle "lit from above" table look */
+  background: radial-gradient(circle at top, var(--felt-light), var(--felt-dark) 70%);
+}
+
+.table-felt {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+header h1 {
+  color: var(--gold);
+  font-size: 2rem;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  margin: 0;
+}
+
+.tagline {
+  color: var(--cream);
+  opacity: 0.85;
+  margin: 4px 0 0;
+}
+
+/* Each "screen" (setup / play) is styled like a card laid on the table */
+.screen {
+  background: var(--cream);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.screen.hidden {
+  display: none;
+}
+
+.screen h2 {
+  margin-top: 0;
+  color: var(--felt-dark);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 8px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin: 16px 0 6px;
+}
+
+select,
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #b8ab8e;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.add-player-row {
+  display: flex;
+  gap: 8px;
+}
+
+.add-player-row input {
+  flex: 1;
+}
+
+/* Buttons share a base look, then primary/secondary tweak color */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  padding: 10px 16px;
+  transition: transform 0.05s ease-in-out;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+#add-player-button {
+  background: var(--felt-light);
+  color: var(--cream);
+}
+
+.primary-button {
+  width: 100%;
+  margin-top: 20px;
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: bold;
+  padding: 14px;
+}
+
+.secondary-button {
+  background: var(--card-black);
+  color: var(--cream);
+}
+
+/* Player list on the setup screen */
+#player-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+#player-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e0d6bf;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+}
+
+#player-list button {
+  background: none;
+  color: var(--card-red);
+  font-weight: bold;
+  padding: 2px 8px;
+}
+
+/* Each player's tally button on the play screen looks like a big playing card */
+.player-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #fff;
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+.player-card .suit {
+  font-size: 1.4rem;
+  margin-right: 10px;
+}
+
+.player-card .player-name {
+  flex: 1;
+  font-weight: bold;
+}
+
+.player-card .player-score {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--felt-dark);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Red/black suit coloring, alternated by player order */
+.player-card.suit-red .suit {
+  color: var(--card-red);
+}
+
+.player-card.suit-black .suit {
+  color: var(--card-black);
+}
+
+/* Numeric mode: the card is a plain <div>, not a clickable button, so it
+   needs its own cursor, and wraps to fit the score-entry row underneath. */
+.player-card.numeric-card {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.score-entry {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.score-input {
+  flex: 1;
+  min-width: 0; /* lets the input shrink instead of overflowing the card */
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #b8ab8e;
+  border-radius: 8px;
+}
+
+.add-score-button {
+  background: var(--felt-light);
+  color: var(--cream);
+}
+
+.play-screen-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.play-screen-actions button {
+  flex: 1;
+}
+
+/* A plain-text-looking button for lower-priority actions like "View History" */
+.link-button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: none;
+  color: var(--felt-dark);
+  text-decoration: underline;
+  font-size: 0.95rem;
+}
+
+/* One past game in the history list */
+.history-entry {
+  background: #fff;
+  border: 1px solid #e0d6bf;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.history-entry-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #6b5f47;
+  margin-bottom: 8px;
+}
+
+.history-entry-header .game-name {
+  font-weight: bold;
+  color: var(--felt-dark);
+}
+
+.history-score-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+
+/* The winning player's row gets a gold trophy + bold gold text */
+.history-score-row.winner {
+  color: var(--gold);
+  font-weight: bold;
+}
+
+#history-list p {
+  color: #6b5f47;
+  text-align: center;
+}
+
+/* Custom modal (replaces alert()/confirm()) - a dimmed backdrop with a
+   card-styled box centered on top of it. */
+.modal-overlay {
+  position: fixed;
+  inset: 0; /* shorthand for top/right/bottom/left: 0 */
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-box {
+  background: var(--cream);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+#modal-message {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  margin-top: 0;
+}
