@@ -461,6 +461,8 @@ function renderHistory() {
     return;
   }
 
+  renderRivalryCards(history);
+
   history.forEach((game) => {
     // Fall back to a plain "highest wins" guess if the custom game type this
     // was played under has since been deleted from Manage Games, so old
@@ -502,6 +504,74 @@ function renderHistory() {
     `;
 
     historyListEl.appendChild(entry);
+  });
+}
+
+// All-time running score for every pair of opponents, per game. Only
+// 2-player games count. It's computed from the history list each time, so
+// there's nothing extra to save (and Clear History resets these too).
+// Cards are ordered by whichever matchup was played most recently.
+function renderRivalryCards(history) {
+  const rivalries = new Map();
+
+  // history is newest-first, so the first time a matchup shows up is its
+  // most recent game - that fixes both the card order and the name casing.
+  history.forEach((game) => {
+    const names = Object.keys(game.scores);
+    if (names.length !== 2) return;
+
+    const key =
+      game.gameTypeId +
+      "|" +
+      names.map((n) => n.toLowerCase()).sort().join("|");
+
+    let rivalry = rivalries.get(key);
+    if (!rivalry) {
+      rivalry = { gameTypeId: game.gameTypeId, totals: {}, games: 0 };
+      names.forEach((n) => (rivalry.totals[n.toLowerCase()] = { name: n, score: 0 }));
+      rivalries.set(key, rivalry);
+    }
+    names.forEach((n) => (rivalry.totals[n.toLowerCase()].score += game.scores[n]));
+    rivalry.games += 1;
+  });
+
+  rivalries.forEach((rivalry) => {
+    const gameType = findGameType(rivalry.gameTypeId) || {
+      name: rivalry.gameTypeId,
+      winCondition: "highest",
+    };
+    const sortDirection = gameType.winCondition === "lowest" ? 1 : -1;
+    const ranked = Object.values(rivalry.totals).sort(
+      (a, b) => (a.score - b.score) * sortDirection
+    );
+    const isTied = ranked[0].score === ranked[1].score;
+
+    const card = document.createElement("div");
+    card.className = "history-entry rivalry-card";
+
+    const header = document.createElement("div");
+    header.className = "history-entry-header";
+    const title = document.createElement("span");
+    title.className = "game-name";
+    title.textContent = `${gameType.name} - All-Time`;
+    const count = document.createElement("span");
+    count.textContent = `${rivalry.games} night${rivalry.games === 1 ? "" : "s"}`;
+    header.append(title, count);
+    card.appendChild(header);
+
+    ranked.forEach((player, i) => {
+      const row = document.createElement("div");
+      const leads = i === 0 && !isTied;
+      row.className = `history-score-row ${leads ? "winner" : ""}`;
+      const name = document.createElement("span");
+      name.textContent = (leads ? "🏆 " : "") + player.name;
+      const score = document.createElement("span");
+      score.textContent = player.score;
+      row.append(name, score);
+      card.appendChild(row);
+    });
+
+    historyListEl.appendChild(card);
   });
 }
 

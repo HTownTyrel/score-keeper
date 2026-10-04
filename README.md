@@ -16,6 +16,8 @@ number of players and different kinds of games.
   closing the tab won't lose your progress.
 - **Game History:** ending a game saves it to a history list, showing the
   final score and marking the winner (🏆). History can be cleared too.
+  For 2-player games, cards at the top show the all-time running score
+  between those two opponents for that game.
 - **Manage Games:** add your own custom games (name, tally-or-numeric, and
   whether most or fewest points wins) right from the app - no code editing
   needed. Built-in games (Golf, 99) can't be deleted; custom ones can.

@@ -291,6 +291,10 @@ button:active {
   margin-bottom: 10px;
 }
 
+.rivalry-card {
+  border: 2px solid var(--gold);
+}
+
 .history-entry-header {
   display: flex;
   justify-content: space-between;
