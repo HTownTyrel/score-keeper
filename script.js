@@ -555,7 +555,8 @@ function renderRivalryCards(history) {
     title.className = "game-name";
     title.textContent = `${gameType.name} - All-Time`;
     const count = document.createElement("span");
-    count.textContent = `${rivalry.games} night${rivalry.games === 1 ? "" : "s"}`;
+    const unit = gameType.mode === "numeric" ? "total points" : "hands won";
+    count.textContent = `${rivalry.games} night${rivalry.games === 1 ? "" : "s"} · ${unit}`;
     header.append(title, count);
     card.appendChild(header);
 
